@@ -1,5 +1,8 @@
+import collections
+
 import openpyxl
 import datetime as dt
+from calendar import monthrange
 
 
 def select_month_year():
@@ -9,12 +12,21 @@ def select_month_year():
 
 
 def confirm_selection():
-    print('The first day is a', first_day.strftime('%A.'))
+    print('The first day is a', first_day.strftime('%A.'))  # monthrange can be used instead
     return input('Confirm (y/n)? ')
 
 
-def determine_number_of_weeks():
-    pass
+def determine_number_of_weeks():  # improve efficiency?
+    last_day = monthrange(first_day.year, first_day.month)[1]
+    counter = 0
+    for day in range(1, last_day + 1):
+        if dt.date(first_day.year, first_day.month, day).isoweekday() == 5:
+            counter += 1
+        else:
+            continue
+    return counter
+
+
 # based on last Friday?
 # add 7 day until into next month, then decide based on the day
 
@@ -43,8 +55,8 @@ def load_template():
 
 
 first_day = select_month_year()
-confirm_selection()
+# confirm_selection()
 weeks = determine_number_of_weeks()
+print(weeks)
 # add loop for confirm
 # add validation or strip
-determine_dates()
