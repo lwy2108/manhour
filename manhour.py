@@ -16,38 +16,61 @@ def confirm_selection():
     return input('Confirm (y/n)? ')
 
 
-def determine_number_of_weeks():  # improve efficiency?
+def determine_number_of_weeks():  # optimization?
     last_day = monthrange(first_day.year, first_day.month)[1]
-    counter = 0
+    count = 0
     for day in range(1, last_day + 1):
         if dt.date(first_day.year, first_day.month, day).isoweekday() == 5:
-            counter += 1
+            count += 1
         else:
             continue
-    return counter
+    return count
 
 
-# based on last Friday?
-# add 7 day until into next month, then decide based on the day
-
-
-def determine_weekly_start_dates():
+def determine_adjusted_first_day():
     iso_first_day = first_day.isoweekday()
-    if iso_first_day == 1:
+    if first_day.month == 1:  # Jan will always start on the 1st in line with company policy
+        adjustment = dt.timedelta(days=0)
+    elif iso_first_day == 1:
         adjustment = dt.timedelta(days=0)
     elif 1 < iso_first_day < 6:
         adjustment = dt.timedelta(days=(iso_first_day - 1))
-    # Jan should start on 1, Dec should stop on 31: 2 separate measures needed, first for Jan (force no adjustment),
-    # second for Dec, force last day
     else:
         adjustment = dt.timedelta(days=(iso_first_day - 8))
-    wk1 = first_day - adjustment
-    print(wk1, wk1.isoweekday())
-    # return wk1, wk2, wk3, wk4, wk5
+    return first_day - adjustment
 
 
-def determine_weekly_end_dates():
-    pass
+def determine_weekly_start_dates():
+    week_delta = dt.timedelta(days=7)
+    wk1 = adjusted_first_day
+    if wk1.isoweekday() == 1:
+        wk2 = adjusted_first_day + week_delta
+    else:
+        wk2 = adjusted_first_day + dt.timedelta(days=(8-wk1.isoweekday()))
+    wk3 = wk2 + week_delta
+    wk4 = wk3 + week_delta
+    if weeks == 5:
+        wk5 = wk4 + week_delta
+    else:
+        wk5 = None
+    return wk1, wk2, wk3, wk4, wk5
+
+
+def determine_weekly_end_dates(week1, week2, week3, week4, week5):
+    delta = dt.timedelta(days=1)
+    week_delta = dt.timedelta(days=6)
+    wk1 = wk2_start - delta
+    wk2 = wk2_start + week_delta
+    wk3 = wk3_start + week_delta
+    wk4 = wk4_start + week_delta
+    try:
+        if first_day.month == 12:
+            wk5 = wk5_start.replace(day=31)  # Dec will always end on the 31st
+        else:
+            wk5 = wk5_start + week_delta
+    except TypeError:
+        wk5 = None
+    return wk1, wk2, wk3, wk4, wk5
 
 
 def load_template():
@@ -57,6 +80,11 @@ def load_template():
 first_day = select_month_year()
 # confirm_selection()
 weeks = determine_number_of_weeks()
-print(weeks)
+adjusted_first_day = determine_adjusted_first_day()
+wk1_start, wk2_start, wk3_start, wk4_start, wk5_start = determine_weekly_start_dates()
+wk1_end, wk2_end, wk3_end, wk4_end, wk5_end = determine_weekly_end_dates(wk1_start, wk2_start, wk3_start,wk4_start,
+                                                                         wk5_start)
+print(wk1_start, wk2_start, wk3_start, wk4_start, wk5_start)
+print(wk1_end, wk2_end, wk3_end, wk4_end, wk5_end)
 # add loop for confirm
 # add validation or strip
