@@ -2,6 +2,9 @@ import xlrd
 import openpyxl
 from openpyxl.workbook import Workbook
 from openpyxl import load_workbook
+import re
+
+
 # from json import dump
 
 
@@ -16,7 +19,7 @@ def read_xls_to_xlsx(source, sheet):
 
     for row in range(xls_sheet.nrows):
         for column in range(xls_sheet.ncols):
-            xlsx_sheet.cell(row=row+1, column=column+1).value = xls_sheet.cell_value(row, column)
+            xlsx_sheet.cell(row=row + 1, column=column + 1).value = xls_sheet.cell_value(row, column)
 
     return xlsx, xls_sheet_name
 
@@ -29,7 +32,54 @@ def load_file():
         return read_xls_to_xlsx(file_path, 0)
 
 
+def parse_for_employees():
+    count = 0
+    data = {}
+    for row in file_sheet['D10':'D3000']:
+        for cell in row:
+            if cell.value == 'Name : ':
+                count += 1
+                data[file_sheet['E' + str(cell.row)].value] = cell.coordinate
+    return count, data
 
+
+def parse_for_leave(emp):
+    first_entry_start = file_sheet['E' + str(file_sheet[emp_summary[emp]].row + 4)]
+    if re.match('^[0-9]{2}/[0-9]{2}/[0-9]{4}$', first_entry_start.value):
+        pass
+    else:
+        first_entry_start = file_sheet['E' + str(first_entry_start.row + 1)]
+    first_entry_end = file_sheet['F' + str(first_entry_start.row)]
+    first_entry_days = file_sheet['G' + str(first_entry_start.row)]
+    first_entry_approval = file_sheet['I' + str(first_entry_start.row)]
+    emp_summary[emp] = {first_entry_start.value: [first_entry_end.value, first_entry_days.value,
+                                                  first_entry_approval.value]}
+    cell_in_focus = first_entry_start
+    cell_attempt = cell_in_focus
+    run = True
+    while run:
+        cell_in_focus = cell_attempt
+        for adjustment in range(2, 3):
+            cell_attempt = file_sheet.cell(row=cell_in_focus.row+adjustment, column=cell_in_focus.column)
+            if re.match('^[0-9]{2}/[0-9]{2}/[0-9]{4}$', str(cell_attempt.value)):
+                cell_attempt_end = file_sheet['F'+str(cell_attempt.row)]
+                cell_attempt_days = file_sheet['G'+str(cell_attempt.row)]
+                cell_attempt_approval = file_sheet['I'+str(cell_attempt.row)]
+                emp_summary[emp][cell_attempt.value] = [cell_attempt_end.value, cell_attempt_days.value,
+                                                        cell_attempt_approval.value]
+                cell_in_focus = cell_attempt
+                if cell_in_focus.value == 'Subtotal':
+                    run = False
+                    break
+                break
+            else:
+                continue
+        continue
+
+    # reference search from next emp, or no. of emp?
+    # filter dates - try/except
+    # cancelled entries
+    # use count
 
 
 # def generate_leave_summary():
@@ -68,6 +118,8 @@ if sheet_name is None:
     file_sheet = file.worksheets[0]
 else:
     file_sheet = file[sheet_name]
-print(file_sheet['A1'].value)
-
-# name, dates, split into individual days
+emp_count, emp_summary = parse_for_employees()
+for employee in emp_summary.keys():
+    parse_for_leave(employee)
+    print(emp_summary[employee])
+# split into individual days?
