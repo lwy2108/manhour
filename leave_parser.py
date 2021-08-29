@@ -56,10 +56,9 @@ def parse_for_leave(emp):
                                                   first_entry_approval.value]}
     cell_in_focus = first_entry_start
     cell_attempt = cell_in_focus
-    run = True
-    while run:
+    while True:
         cell_in_focus = cell_attempt
-        for adjustment in range(2, 3):
+        for adjustment in range(1, 4):
             cell_attempt = file_sheet.cell(row=cell_in_focus.row+adjustment, column=cell_in_focus.column)
             if re.match('^[0-9]{2}/[0-9]{2}/[0-9]{4}$', str(cell_attempt.value)):
                 cell_attempt_end = file_sheet['F'+str(cell_attempt.row)]
@@ -67,14 +66,13 @@ def parse_for_leave(emp):
                 cell_attempt_approval = file_sheet['I'+str(cell_attempt.row)]
                 emp_summary[emp][cell_attempt.value] = [cell_attempt_end.value, cell_attempt_days.value,
                                                         cell_attempt_approval.value]
-                cell_in_focus = cell_attempt
-                if cell_in_focus.value == 'Subtotal':
-                    run = False
-                    break
                 break
             else:
                 continue
-        continue
+        if cell_in_focus.value == 'Subtotal':
+            break
+        else:
+            continue
 
     # reference search from next emp, or no. of emp?
     # filter dates - try/except
@@ -121,5 +119,5 @@ else:
 emp_count, emp_summary = parse_for_employees()
 for employee in emp_summary.keys():
     parse_for_leave(employee)
-    print(emp_summary[employee])
+    print(employee, emp_summary[employee])
 # split into individual days?
