@@ -8,12 +8,12 @@ def select_month_year():
     return dt.datetime.strptime(selected_month + selected_year, '%b%Y')
 
 
-def confirm_selection():
+def confirm_selection(first_day):
     print('The first day is a', first_day.strftime('%A.'))  # monthrange can be used instead
     return input('Confirm (y/n)? ')
 
 
-def determine_number_of_weeks():  # optimization?
+def determine_number_of_weeks(first_day):  # optimization?
     last_day = monthrange(first_day.year, first_day.month)[1]
     count = 0
     for day in range(1, last_day + 1):
@@ -24,7 +24,7 @@ def determine_number_of_weeks():  # optimization?
     return count
 
 
-def determine_adjusted_first_day():
+def determine_adjusted_first_day(first_day):
     iso_first_day = first_day.isoweekday()
     if first_day.month == 1:  # Jan will always start on the 1st in line with company policy
         adjustment = dt.timedelta(days=0)
@@ -37,7 +37,7 @@ def determine_adjusted_first_day():
     return first_day - adjustment
 
 
-def determine_weekly_start_dates():
+def determine_weekly_start_dates(adjusted_first_day, weeks):
     week_delta = dt.timedelta(days=7)
     wk1 = adjusted_first_day
     if wk1.isoweekday() == 1:
@@ -53,7 +53,7 @@ def determine_weekly_start_dates():
     return wk1, wk2, wk3, wk4, wk5
 
 
-def determine_weekly_end_dates(week1, week2, week3, week4, week5):
+def determine_weekly_end_dates(wk1_start, wk2_start, wk3_start, wk4_start, wk5_start):
     delta = dt.timedelta(days=1)
     week_delta = dt.timedelta(days=6)
     wk1 = wk2_start - delta
@@ -61,7 +61,7 @@ def determine_weekly_end_dates(week1, week2, week3, week4, week5):
     wk3 = wk3_start + week_delta
     wk4 = wk4_start + week_delta
     try:
-        if first_day.month == 12:
+        if wk1_start.month == 12:
             wk5 = wk5_start.replace(day=31)  # Dec will always end on the 31st
         else:
             wk5 = wk5_start + week_delta
