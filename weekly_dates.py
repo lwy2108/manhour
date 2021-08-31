@@ -8,9 +8,13 @@ def select_month_year():
     return dt.datetime.strptime(selected_month + selected_year, '%b%Y')
 
 
-def confirm_selection(first_day):
-    print('The first day is a', first_day.strftime('%A.'))  # monthrange can be used instead
-    return input('Confirm (y/n)? ')
+def confirm_selection():
+    # print('The first day is a', first_day.strftime('%A.'))  # monthrange can be used instead
+    confirm = input('Confirm (y/n)? ')
+    if confirm.strip() == 'y':
+        return 'y'
+    else:
+        return 'n'
 
 
 def determine_number_of_weeks(first_day):  # optimization?
