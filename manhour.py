@@ -1,5 +1,6 @@
 import weekly_dates as wd
 import leave_parser as lp
+import generate_report as gr
 import datetime as dt
 
 
@@ -51,6 +52,17 @@ else:
 emp_summary = lp.parse_for_employees(file_sheet)
 for employee in emp_summary.keys():
     lp.parse_for_leave(employee, emp_summary, file_sheet)
-    # print(employee, emp_summary[employee])
+    print(employee, emp_summary[employee])
 
 # add completion message
+
+holidays = gr.load_holidays(first_day.year)
+gr.remove_cancel(emp_summary)
+for employee in list(emp_summary.keys()):
+    for entry in emp_summary[employee].keys():
+        print(entry, emp_summary[employee][entry])
+        if emp_summary[employee][entry][1] > 1.0:
+            start_dt = dt.datetime.strptime(entry, '%d/%m/%Y')
+            end_dt = dt.datetime.strptime(emp_summary[employee][entry][0], '%d/%m/%Y')
+            entry_dates = gr.entry_dates(start_dt, end_dt)
+            print(entry_dates)

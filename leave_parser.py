@@ -54,20 +54,13 @@ def parse_for_leave(emp, emp_summary, file_sheet):
     while True:
         cell_in_focus = cell_attempt
         for adjustment in range(1, 4):
-            if cell_in_focus:
-                cell_attempt = file_sheet.cell(row=cell_in_focus.row+adjustment, column=cell_in_focus.column)
-            else:
-                continue
+            cell_attempt = file_sheet.cell(row=cell_in_focus.row+adjustment, column=cell_in_focus.column)
             if re.match('^[0-9]{2}/[0-9]{2}/[0-9]{4}$', str(cell_attempt.value)):
-                cell_attempt_end = file_sheet['F'+str(cell_attempt.row)]
-                cell_attempt_days = file_sheet['G'+str(cell_attempt.row)]
-                cell_attempt_approval = file_sheet['I'+str(cell_attempt.row)]
+                cell_attempt_end = file_sheet['F' + str(cell_attempt.row)]
+                cell_attempt_days = file_sheet['G' + str(cell_attempt.row)]
+                cell_attempt_approval = file_sheet['I' + str(cell_attempt.row)]
                 emp_summary[emp][cell_attempt.value] = [cell_attempt_end.value, cell_attempt_days.value,
                                                         cell_attempt_approval.value]
                 break
-            else:
-                continue
-        if cell_in_focus.value == 'Subtotal':
+        if cell_attempt.value == 'Subtotal':
             break
-        else:
-            continue

@@ -23,21 +23,44 @@ def export_leave_summary():
     with open('leave_summary.json', 'w') as f:
         dump(leave_summary, f)
 3   to upload sample leave_report and manhour_report, rename manhour.py to main.py
-4   reorg functions into right files - pass args through a dict for start, end dates
+4   reorg functions into right files and tidy up code - pass args through a dict for start, end dates
 5   provide for hired date - approved column
+6   pending leave - treated as consumed
+7   alternative: parse start and end dates from leave report
 """
 
-
-def load_holidays():  # the right year
-    pass
-
-
-def remove_cancel():
-    pass
+from json import load
+import datetime as dt
 
 
-def entry_dates():
-    pass
+def load_holidays(year):  # the right year
+    holidays = []
+    with open(f'ph_{year}.json') as file:
+        holidays_str = load(file)
+        for date in holidays_str:
+            holidays.append(dt.datetime.strptime(date, '%Y/%m/%d'))
+    return holidays
+
+
+def remove_cancel(emp_summary):
+    for emp in emp_summary.keys():
+        for entry in list(emp_summary[emp].keys()):
+            if emp_summary[emp][entry][2] == 'Cancel':
+                del emp_summary[emp][entry]
+                continue
+            else:
+                continue
+
+
+def entry_dates(start_dt, end_dt):
+    dates = []
+    day = start_dt
+    while True:
+        dates.append(day)
+        if day == end_dt:
+            break
+        day += dt.timedelta(days=1)
+    return dates
 
 
 def entry_duration():  # only working days, and excluding PH
