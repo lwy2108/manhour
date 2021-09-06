@@ -42,6 +42,10 @@ def load_holidays(year):  # the right year
     return holidays
 
 
+def fill_holidays(holidays):  # special column
+    pass
+
+
 def remove_cancel(emp_summary):
     for emp in emp_summary.keys():
         for entry in list(emp_summary[emp].keys()):
@@ -99,7 +103,8 @@ def report_add_entry():  # add not replace
     pass
 
 
-def entry_remove_successful():  # only if successful
+def entry_remove_successful():  # only if successful, based on type (Others: OIL, BIRTHDAY LEAVE;
+    # HOSPITALISATION LEAVE AND SICK LEAVE; NATIONAL SERVICE LEAVE)
     pass
 
 
