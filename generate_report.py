@@ -31,6 +31,7 @@ def export_leave_summary():
 
 from json import load
 import datetime as dt
+import openpyxl as xl
 
 
 def load_holidays(year):  # the right year
@@ -40,10 +41,6 @@ def load_holidays(year):  # the right year
         for date in holidays_str:
             holidays.append(dt.datetime.strptime(date, '%Y/%m/%d'))
     return holidays
-
-
-def fill_holidays(holidays):  # special column
-    pass
 
 
 def remove_cancel(emp_summary):
@@ -79,8 +76,17 @@ def transform_emp_names():  # upper, strip(), in keys
     pass
 
 
-def load_template():  # based on no. of weeks
-    pass
+def load_template(weeks):
+    template = xl.load_workbook(f'mh_template_{weeks}wk.xlsx')
+    report = template
+    return report['ITS_D']
+
+
+def write_title_date(report, first_day, last_day):  # change dates in other sheets too (prep template)
+    cell = report['A1']
+    start = dt.datetime.strftime(first_day, '%d/%m/%Y')
+    end = dt.datetime.strftime(last_day, '%d/%m/%Y')
+    cell.value = f'MANHOUR REPORT FOR CSE-ITS PTE LTD - JUN ({start} ~ {end})'
 
 
 def report_focus_next_line():  # until approval line, variable for current line (updates after line count)
@@ -99,6 +105,10 @@ def report_match_failsafe():  # remove symbols and match by part, etc -- perform
     pass  # do this last after analysing the fails
 
 
+def fill_holidays(holidays):  # special column
+    pass
+
+
 def report_add_entry():  # add not replace
     pass
 
@@ -109,6 +119,10 @@ def entry_remove_successful():  # only if successful, based on type (Others: OIL
 
 
 def append_leave_report():
+    pass
+
+
+def save_report():
     pass
 
 

@@ -66,3 +66,7 @@ for employee in list(emp_summary.keys()):
             end_dt = dt.datetime.strptime(emp_summary[employee][entry][0], '%d/%m/%Y')
             entry_dates = gr.entry_dates(start_dt, end_dt)
             print(entry_dates)
+
+report = gr.load_template(weeks)
+gr.write_title_date(report, adjusted_first_day, globals()[f'wk{weeks}_end'])
+print(report['A1'].value)
