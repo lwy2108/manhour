@@ -69,4 +69,36 @@ for employee in list(emp_summary.keys()):
 
 report = gr.load_template(weeks)
 gr.write_title_date(report, adjusted_first_day, globals()[f'wk{weeks}_end'])
-print(report['A1'].value)
+# print(report['A1'].value)
+emp_first_row = []
+max_row = report.max_row - 25
+
+for row in report[f'A8:A{max_row}']:
+    for cell in row:
+        if cell.value:
+            correct_count = gr.report_verify_line_count(weeks, report, cell.row, cell.column)
+            if correct_count == 1:
+                emp_first_row.append(cell.row)
+                gr.report_focus_next_line(report, cell.row + weeks - 1)
+                print(cell.value)
+            else:
+                gr.report_focus_next_line(report, cell.row)
+
+# insert loop to fill PH
+for row in emp_first_row:
+    pass
+
+matched_emp = {}
+
+for emp in emp_summary.keys():
+    print(emp, '--------------')
+    match, name, row = gr.report_simple_match(report, emp_first_row, emp)
+    if match == 1:
+        print('1')
+        matched_emp[name] = row
+    else:
+        print('0')
+
+for employee in matched_emp:
+    print(employee)
+    print(matched_emp[employee])

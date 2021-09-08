@@ -27,6 +27,7 @@ def export_leave_summary():
 5   provide for hired date - approved column
 6   pending leave - treated as consumed
 7   alternative: parse start and end dates from leave report
+8   check handling for shift work
 """
 
 from json import load
@@ -82,23 +83,36 @@ def load_template(weeks):
     return report['ITS_D']
 
 
-def write_title_date(report, first_day, last_day):  # change dates in other sheets too (prep template)
-    cell = report['A1']
+def write_title_date(sheet, first_day, last_day):  # change dates in other sheets too (prep template)
+    cell = sheet['A1']
     start = dt.datetime.strftime(first_day, '%d/%m/%Y')
     end = dt.datetime.strftime(last_day, '%d/%m/%Y')
     cell.value = f'MANHOUR REPORT FOR CSE-ITS PTE LTD - JUN ({start} ~ {end})'
 
 
-def report_focus_next_line():  # until approval line, variable for current line (updates after line count)
-    pass
+def report_focus_next_line(sheet, current_row):
+    sheet.cell(row=current_row + 1, column=1)
 
 
-def report_verify_line_count():
-    pass
+def report_verify_line_count(weeks, sheet, row, column):
+    first_cell = sheet.cell(row=row, column=column)
+    count = 0
+    for row in sheet[f'A{row+1}:A{row+4}']:
+        for cell in row:
+            if first_cell.value == cell.value:
+                count += 1
+    if weeks - 1 == count:
+        return 1
+    else:
+        return 0
 
 
-def report_simple_match():  # strip()
-    pass
+def report_simple_match(sheet, rows, name):
+    for row in rows:
+        cell_text = sheet[f'A{row}'].value.strip()
+        if cell_text == name.upper().strip():
+            return 1, name, row
+    return 0, cell_text, None
 
 
 def report_match_failsafe():  # remove symbols and match by part, etc -- perform on both sides

@@ -31,7 +31,7 @@ def load_file():
 
 def parse_for_employees(file_sheet):
     data = {}
-    for row in file_sheet['D10':'D3000']:
+    for row in file_sheet['D10':'D3000']:  # set max with dimensions
         for cell in row:
             if cell.value == 'Name : ':
                 data[file_sheet['E' + str(cell.row)].value] = cell.coordinate
