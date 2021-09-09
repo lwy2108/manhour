@@ -79,8 +79,8 @@ def transform_emp_names():  # upper, strip(), in keys
 
 def load_template(weeks):
     template = xl.load_workbook(f'mh_template_{weeks}wk.xlsx')
-    report = template
-    return report['ITS_D']
+    report_wb = template
+    return report_wb
 
 
 def write_title_date(sheet, first_day, last_day):  # change dates in other sheets too (prep template)
@@ -109,22 +109,68 @@ def report_verify_line_count(weeks, sheet, row, column):
 
 def report_simple_match(sheet, rows, name):
     for row in rows:
-        cell_text = sheet[f'A{row}'].value.strip()
+        cell_text = sheet[f'A{row}'].value.strip().upper()
         if cell_text == name.upper().strip():
             return 1, name, row
     return 0, cell_text, None
 
 
-def report_match_failsafe():  # remove symbols and match by part, etc -- perform on both sides
-    pass  # do this last after analysing the fails
+def report_match_failsafe(sheet, rows, name):
+    name_parts = name.upper().split()
+    name_parts_len = len(name_parts)
+    matches = 0
+    for row in rows:
+        candidate_parts = []
+        cell_text = sheet[f'A{row}'].value
+        cell_text_parts = cell_text.upper().split()
+        for part in cell_text_parts:
+            candidate_parts.append(''.join(filter(str.isalpha, part)))
+        candidate_parts_len = len(candidate_parts)
+        if name_parts_len > candidate_parts_len:
+            required = candidate_parts_len
+        elif name_parts_len < candidate_parts_len:
+            required = name_parts_len
+        else:
+            required = name_parts_len
+        if required > 3:
+            required = 4
+        for part in name_parts:
+            if part in candidate_parts:
+                matches += 1
+                if matches == required:
+                    return 1, name, row
+    return 0, cell_text, None
 
 
-def fill_holidays(holidays):  # special column
-    pass
+def fill_holidays(sheet, holidays, row, weeks_dates):  # remove added?
+    for holiday in holidays:
+        for week in weeks_dates:
+            if holiday in weeks_dates[week]:
+                try:
+                    sheet[f'F{row + week - 1}'].value += 8.3
+                except TypeError:
+                    sheet[f'F{row + week - 1}'].value = 8.3
+
+                print(row, sheet[f'F{row + week - 1}'].value)
 
 
-def report_add_entry():  # add not replace
-    pass
+def report_add_entry(sheet, first_row, weeks_dates, dates, entry_type):  # add not replace, remove successful
+    if entry_type == 'HOSPITALISATION' or entry_type == 'SICK LEAVE':
+        type_column = 'L'
+    elif entry_type == 'BIRTHDAY LEAVE' or entry_type == 'OIL':  # check OIL
+        type_column = 'M'
+    elif entry_type == 'NATIONAL SERVICE LEAVE':
+        type_column = 'J'
+    else:
+        type_column = 'K'
+    for date in dates:
+        for week in weeks_dates:
+            if date in weeks_dates[week]:
+                try:
+                    sheet[f'{type_column}{first_row + week - 1}'].value += 8.3
+                except TypeError:
+                    sheet[f'{type_column}{first_row + week - 1}'].value = 8.3
+
 
 
 def entry_remove_successful():  # only if successful, based on type (Others: OIL, BIRTHDAY LEAVE;

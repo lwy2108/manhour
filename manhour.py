@@ -58,16 +58,9 @@ for employee in emp_summary.keys():
 
 holidays = gr.load_holidays(first_day.year)
 gr.remove_cancel(emp_summary)
-for employee in list(emp_summary.keys()):
-    for entry in emp_summary[employee].keys():
-        print(entry, emp_summary[employee][entry])
-        if emp_summary[employee][entry][1] > 1.0:
-            start_dt = dt.datetime.strptime(entry, '%d/%m/%Y')
-            end_dt = dt.datetime.strptime(emp_summary[employee][entry][0], '%d/%m/%Y')
-            entry_dates = gr.entry_dates(start_dt, end_dt)
-            print(entry_dates)
 
-report = gr.load_template(weeks)
+report_wb = gr.load_template(weeks)
+report = report_wb['ITS_D']
 gr.write_title_date(report, adjusted_first_day, globals()[f'wk{weeks}_end'])
 # print(report['A1'].value)
 emp_first_row = []
@@ -84,21 +77,55 @@ for row in report[f'A8:A{max_row}']:
             else:
                 gr.report_focus_next_line(report, cell.row)
 
-# insert loop to fill PH
-for row in emp_first_row:
-    pass
 
 matched_emp = {}
 
+# matching, simple then complex (failsafe)
 for emp in emp_summary.keys():
     print(emp, '--------------')
     match, name, row = gr.report_simple_match(report, emp_first_row, emp)
     if match == 1:
         print('1')
-        matched_emp[name] = row
+        matched_emp[emp] = row
+        emp_first_row.remove(row)
     else:
-        print('0')
+        match, name, row = gr.report_match_failsafe(report, emp_first_row, emp)
+        if match == 1:
+            print('+1')
+            matched_emp[emp] = row
+            emp_first_row.remove(row)
+        else:
+            print('0')
+for row in emp_first_row:
+    print(report[f'A{row}'].value)
+print(len(emp_first_row))
 
-for employee in matched_emp:
-    print(employee)
-    print(matched_emp[employee])
+print(matched_emp)
+
+for row in emp_first_row:
+    gr.fill_holidays(report, holidays, row, weeks_dates)
+
+for employee in emp_summary:
+    try:
+        first_row = matched_emp[employee]
+    except KeyError:
+        continue
+    for entry in emp_summary[employee]:
+        print(employee)
+        if emp_summary[employee][entry][1] > 1.0:
+            start_dt = dt.datetime.strptime(entry, '%d/%m/%Y')
+            end_dt = dt.datetime.strptime(emp_summary[employee][entry][0], '%d/%m/%Y')
+            entry_dates = gr.entry_dates(start_dt, end_dt)
+        else:
+            entry_dates = [dt.datetime.strptime(entry, '%d/%m/%Y')]
+        print(entry_dates)
+        entry_type = emp_summary[employee][entry][3]
+        print(entry_type)
+        gr.report_add_entry(report, first_row, weeks_dates, entry_dates, entry_type)
+
+report_date = dt.datetime.strftime(adjusted_first_day, '%m-%Y')
+report_wb.save(f'manhour_{report_date}.xlsx')
+
+# 2 bosses - separate leave report
+# use dict for first_row:name?
+# update template - change in staff, highlighting
