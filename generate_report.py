@@ -118,8 +118,9 @@ def report_simple_match(sheet, rows, name):
 def report_match_failsafe(sheet, rows, name):
     name_parts = name.upper().split()
     name_parts_len = len(name_parts)
-    matches = 0
+    exclude = ['SYED']
     for row in rows:
+        matches = 0
         candidate_parts = []
         cell_text = sheet[f'A{row}'].value
         cell_text_parts = cell_text.upper().split()
@@ -133,10 +134,11 @@ def report_match_failsafe(sheet, rows, name):
         else:
             required = name_parts_len
         if required > 3:
-            required = 4
+            required = 3
         for part in name_parts:
             if part in candidate_parts:
-                matches += 1
+                if part not in exclude:
+                    matches += 1
                 if matches == required:
                     return 1, name, row
     return 0, cell_text, None
@@ -170,7 +172,6 @@ def report_add_entry(sheet, first_row, weeks_dates, dates, entry_type):  # add n
                     sheet[f'{type_column}{first_row + week - 1}'].value += 8.3
                 except TypeError:
                     sheet[f'{type_column}{first_row + week - 1}'].value = 8.3
-
 
 
 def entry_remove_successful():  # only if successful, based on type (Others: OIL, BIRTHDAY LEAVE;

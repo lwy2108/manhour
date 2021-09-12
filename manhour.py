@@ -49,7 +49,9 @@ if sheet_name is None:
     file_sheet = file.worksheets[0]
 else:
     file_sheet = file[sheet_name]
+
 emp_summary = lp.parse_for_employees(file_sheet)
+
 for employee in emp_summary.keys():
     lp.parse_for_leave(employee, emp_summary, file_sheet)
     print(employee, emp_summary[employee])
@@ -68,15 +70,24 @@ max_row = report.max_row - 25
 
 for row in report[f'A8:A{max_row}']:
     for cell in row:
-        if cell.value:
+        if str(cell.value).strip():
             correct_count = gr.report_verify_line_count(weeks, report, cell.row, cell.column)
-            if correct_count == 1:
+            if str(cell.value).strip() == 'None':
+                continue
+            elif correct_count == 1:
                 emp_first_row.append(cell.row)
                 gr.report_focus_next_line(report, cell.row + weeks - 1)
                 print(cell.value)
             else:
                 gr.report_focus_next_line(report, cell.row)
 
+for row in emp_first_row:
+    gr.fill_holidays(report, holidays, row, weeks_dates)
+
+print('Employee first rows --------------------------')
+print(emp_first_row)
+for row in emp_first_row:
+    print(row, report[f'A{row}'].value)
 
 matched_emp = {}
 
@@ -102,23 +113,19 @@ print(len(emp_first_row))
 
 print(matched_emp)
 
-for row in emp_first_row:
-    gr.fill_holidays(report, holidays, row, weeks_dates)
-
 for employee in emp_summary:
     try:
         first_row = matched_emp[employee]
+        print('matched', employee)
     except KeyError:
         continue
     for entry in emp_summary[employee]:
-        print(employee)
         if emp_summary[employee][entry][1] > 1.0:
             start_dt = dt.datetime.strptime(entry, '%d/%m/%Y')
             end_dt = dt.datetime.strptime(emp_summary[employee][entry][0], '%d/%m/%Y')
             entry_dates = gr.entry_dates(start_dt, end_dt)
         else:
             entry_dates = [dt.datetime.strptime(entry, '%d/%m/%Y')]
-        print(entry_dates)
         entry_type = emp_summary[employee][entry][3]
         print(entry_type)
         gr.report_add_entry(report, first_row, weeks_dates, entry_dates, entry_type)
@@ -129,3 +136,4 @@ report_wb.save(f'manhour_{report_date}.xlsx')
 # 2 bosses - separate leave report
 # use dict for first_row:name?
 # update template - change in staff, highlighting
+# OOP: create employee objects
