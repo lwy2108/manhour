@@ -156,7 +156,7 @@ def fill_holidays(sheet, holidays, row, weeks_dates):  # remove added?
                 print(row, sheet[f'F{row + week - 1}'].value)
 
 
-def report_add_entry(sheet, first_row, weeks_dates, dates, entry_type):  # add not replace, remove successful
+def report_add_entry(sheet, first_row, weeks_dates, dates, entry_type, duration):  # add not replace, remove successful
     if entry_type == 'HOSPITALISATION' or entry_type == 'SICK LEAVE':
         type_column = 'L'
     elif entry_type == 'BIRTHDAY LEAVE' or entry_type == 'OIL':  # check OIL
@@ -168,10 +168,16 @@ def report_add_entry(sheet, first_row, weeks_dates, dates, entry_type):  # add n
     for date in dates:
         for week in weeks_dates:
             if date in weeks_dates[week]:
-                try:
-                    sheet[f'{type_column}{first_row + week - 1}'].value += 8.3
-                except TypeError:
-                    sheet[f'{type_column}{first_row + week - 1}'].value = 8.3
+                if duration != 0.5:
+                    try:
+                        sheet[f'{type_column}{first_row + week - 1}'].value += 8.3
+                    except TypeError:
+                        sheet[f'{type_column}{first_row + week - 1}'].value = 8.3
+                else:
+                    try:
+                        sheet[f'{type_column}{first_row + week - 1}'].value += 4.15
+                    except TypeError:
+                        sheet[f'{type_column}{first_row + week - 1}'].value = 4.15
 
 
 def entry_remove_successful():  # only if successful, based on type (Others: OIL, BIRTHDAY LEAVE;

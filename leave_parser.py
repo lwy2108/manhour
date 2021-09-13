@@ -22,7 +22,15 @@ def read_xls_to_xlsx(source, sheet):
 
 
 def load_file():
-    file_path = input('Drag and drop file, then press enter: ')
+    file_path = input('Drag and drop leave report for staff, then press enter: ')
+    try:
+        return load_workbook(file_path), None
+    except openpyxl.utils.exceptions.InvalidFileException:
+        return read_xls_to_xlsx(file_path, 0)
+
+
+def load_file_boss():
+    file_path = input('Drag and drop leave report for bosses, then press enter: ')
     try:
         return load_workbook(file_path), None
     except openpyxl.utils.exceptions.InvalidFileException:
@@ -44,6 +52,7 @@ def parse_for_leave(emp, emp_summary, file_sheet):
         pass
     else:
         first_entry_start = file_sheet['E' + str(first_entry_start.row + 1)]
+    print(emp, first_entry_start.coordinate, first_entry_start.value)
     first_entry_end = file_sheet['F' + str(first_entry_start.row)]
     first_entry_days = file_sheet['G' + str(first_entry_start.row)]
     first_entry_approval = file_sheet['I' + str(first_entry_start.row)]
@@ -64,5 +73,8 @@ def parse_for_leave(emp, emp_summary, file_sheet):
                 emp_summary[emp][cell_attempt.value] = [cell_attempt_end.value, cell_attempt_days.value,
                                                         cell_attempt_approval.value, cell_attempt_type.value]
                 break
+            if cell_attempt.value != 'Subtotal':
+                continue
+            break
         if cell_attempt.value == 'Subtotal':
             break

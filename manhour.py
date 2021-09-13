@@ -52,9 +52,31 @@ else:
 
 emp_summary = lp.parse_for_employees(file_sheet)
 
+# for bosses
+
+while True:
+    try:
+        file_boss, sheet_name_boss = lp.load_file_boss()
+        break
+    except FileNotFoundError:
+        print('File not found. Try again.')
+        continue
+if sheet_name_boss is None:
+    file_sheet_boss = file_boss.worksheets[0]
+else:
+    file_sheet_boss = file_boss[sheet_name_boss]
+
+boss_summary = lp.parse_for_employees(file_sheet_boss)
+
 for employee in emp_summary.keys():
     lp.parse_for_leave(employee, emp_summary, file_sheet)
     print(employee, emp_summary[employee])
+
+for boss in boss_summary:
+    lp.parse_for_leave(boss, boss_summary,file_sheet_boss)
+    print(boss, boss_summary[boss])
+
+emp_summary = {**emp_summary, **boss_summary}
 
 # add completion message
 
@@ -127,11 +149,14 @@ for employee in emp_summary:
         else:
             entry_dates = [dt.datetime.strptime(entry, '%d/%m/%Y')]
         entry_type = emp_summary[employee][entry][3]
+        entry_duration = emp_summary[employee][entry][1]
         print(entry_type)
-        gr.report_add_entry(report, first_row, weeks_dates, entry_dates, entry_type)
+        gr.report_add_entry(report, first_row, weeks_dates, entry_dates, entry_type, entry_duration)
 
 report_date = dt.datetime.strftime(adjusted_first_day, '%m-%Y')
 report_wb.save(f'manhour_{report_date}.xlsx')
+
+print(file_sheet['E424'].value)
 
 # 2 bosses - separate leave report
 # use dict for first_row:name?
