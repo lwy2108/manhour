@@ -29,14 +29,14 @@ weeks_dates = {}
 for week in range(1, weeks+1):
     weeks_dates[week] = []
     weeks_dates[week].append(globals()[f'wk{week}_start'])
-    for day in range(1,7):
+    for day in range(1,5):
         day_date = globals()[f'wk{week}_start'] + dt.timedelta(days=day)
         if day_date == globals()[f'wk{week}_end']:
             weeks_dates[week].append(day_date)
             break
         else:
             weeks_dates[week].append(day_date)
-    # print('Week', week, ':', weeks_dates[week])
+    print('Week', week, ':', weeks_dates[week])
 
 while True:
     try:
@@ -105,6 +105,11 @@ for row in report[f'A8:A{max_row}']:
 
 for row in emp_first_row:
     gr.fill_holidays(report, holidays, row, weeks_dates)
+    report[f'D{row}'] = wk1_start
+    report[f'E{row}'] = wk1_end
+    for line in range(1, weeks):
+        report[f'D{row+line}'] = globals()[f'wk{1+line}_start']
+        report[f'E{row+line}'] = globals()[f'wk{1+line}_end']
 
 print('Employee first rows --------------------------')
 print(emp_first_row)
@@ -143,7 +148,7 @@ for employee in emp_summary:
         continue
     for entry in emp_summary[employee]:
         if emp_summary[employee][entry][1] > 1.0:
-            start_dt = dt.datetime.strptime(entry, '%d/%m/%Y')
+            start_dt = dt.datetime.strptime(entry[0:10], '%d/%m/%Y')
             end_dt = dt.datetime.strptime(emp_summary[employee][entry][0], '%d/%m/%Y')
             entry_dates = gr.entry_dates(start_dt, end_dt)
         else:

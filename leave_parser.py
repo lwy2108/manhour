@@ -61,17 +61,24 @@ def parse_for_leave(emp, emp_summary, file_sheet):
                                                   first_entry_approval.value, first_entry_type.value]}
     cell_in_focus = first_entry_start
     cell_attempt = cell_in_focus
+    counter = 0
     while True:
+        counter += 1
         cell_in_focus = cell_attempt
         for adjustment in range(1, 4):
-            cell_attempt = file_sheet.cell(row=cell_in_focus.row+adjustment, column=cell_in_focus.column)
+            cell_attempt = file_sheet.cell(row=cell_in_focus.row + adjustment, column=cell_in_focus.column)
             if re.match('^[0-9]{2}/[0-9]{2}/[0-9]{4}$', str(cell_attempt.value)):
                 cell_attempt_end = file_sheet['F' + str(cell_attempt.row)]
                 cell_attempt_days = file_sheet['G' + str(cell_attempt.row)]
                 cell_attempt_approval = file_sheet['I' + str(cell_attempt.row)]
                 cell_attempt_type = file_sheet['A' + str(cell_attempt.row)]
-                emp_summary[emp][cell_attempt.value] = [cell_attempt_end.value, cell_attempt_days.value,
-                                                        cell_attempt_approval.value, cell_attempt_type.value]
+                if cell_attempt.value not in emp_summary[emp]:
+                    emp_summary[emp][cell_attempt.value] = [cell_attempt_end.value, cell_attempt_days.value,
+                                                            cell_attempt_approval.value, cell_attempt_type.value]
+                else:
+                    emp_summary[emp][cell_attempt.value + str(counter)] = [cell_attempt_end.value, cell_attempt_days.value,
+                                                                      cell_attempt_approval.value,
+                                                                      cell_attempt_type.value]
                 break
             if cell_attempt.value != 'Subtotal':
                 continue
