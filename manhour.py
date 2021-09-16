@@ -143,7 +143,7 @@ print(matched_emp)
 for employee in emp_summary:
     try:
         first_row = matched_emp[employee]
-        print('matched', employee)
+        print('matched', employee, emp_summary[employee], first_row)
     except KeyError:
         continue
     for entry in emp_summary[employee]:
@@ -158,7 +158,7 @@ for employee in emp_summary:
         print(entry_type)
         gr.report_add_entry(report, first_row, weeks_dates, entry_dates, entry_type, entry_duration)
 
-report_date = dt.datetime.strftime(adjusted_first_day, '%m-%Y')
+report_date = dt.datetime.strftime(first_day, '%m-%Y')
 report_wb.save(f'manhour_{report_date}.xlsx')
 
 print(file_sheet['E424'].value)
