@@ -4,8 +4,9 @@ class Employee:
   
   hours = "Regular"
   
-  def __init__(self, name):
+  def __init__(self, name, coordinates):
     self.name = name
+    self.coordinates = coordinates
   
   def check_shift(self, shift_work):
     if shift_work == 1:
