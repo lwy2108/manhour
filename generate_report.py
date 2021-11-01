@@ -159,7 +159,7 @@ def fill_holidays(sheet, holidays, row, weeks_dates):  # remove added?
 def report_add_entry(sheet, first_row, weeks_dates, dates, entry_type, duration):  # add not replace, remove successful
     if entry_type == 'HOSPITALISATION' or entry_type == 'SICK LEAVE':
         type_column = 'L'
-    elif entry_type == 'BIRTHDAY LEAVE' or entry_type == 'OFF IN LIEU': 
+    elif entry_type == 'BIRTHDAY LEAVE' or entry_type == 'BIRTHDAY' or entry_type == 'OFF IN LIEU':
         type_column = 'M'
     elif entry_type == 'NATIONAL SERVICE LEAVE':
         type_column = 'J'
