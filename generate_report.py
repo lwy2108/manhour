@@ -83,11 +83,11 @@ def load_template(weeks):
     return report_wb
 
 
-def write_title_date(sheet, first_day, last_day):  # change dates in other sheets too (prep template)
+def write_title_date(sheet, first_day, last_day, month):  # change dates in other sheets too (prep template)
     cell = sheet['A1']
     start = dt.datetime.strftime(first_day, '%d/%m/%Y')
     end = dt.datetime.strftime(last_day, '%d/%m/%Y')
-    cell.value = f'MANHOUR REPORT FOR CSE-ITS PTE LTD - JUN ({start} ~ {end})'
+    cell.value = f'MANHOUR REPORT FOR CSE-ITS PTE LTD - {month} ({start} ~ {end})'
 
 
 def report_focus_next_line(sheet, current_row):

@@ -85,7 +85,8 @@ gr.remove_cancel(emp_summary)
 
 report_wb = gr.load_template(weeks)
 report = report_wb['ITS_D']
-gr.write_title_date(report, adjusted_first_day, globals()[f'wk{weeks}_end'])
+mth = dt.datetime.strftime(wk3_start, '%b').upper()
+gr.write_title_date(report, adjusted_first_day, globals()[f'wk{weeks}_end'], mth)
 # print(report['A1'].value)
 emp_first_row = []
 max_row = report.max_row - 25
@@ -158,12 +159,5 @@ for employee in emp_summary:
         print(entry_type)
         gr.report_add_entry(report, first_row, weeks_dates, entry_dates, entry_type, entry_duration)
 
-report_date = dt.datetime.strftime(first_day, '%m-%Y')
+report_date = dt.datetime.strftime(wk3_start, '%m-%Y')
 report_wb.save(f'manhour_{report_date}.xlsx')
-
-print(file_sheet['E424'].value)
-
-# 2 bosses - separate leave report
-# use dict for first_row:name?
-# update template - change in staff, highlighting
-# OOP: create employee objects
