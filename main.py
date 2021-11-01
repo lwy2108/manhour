@@ -85,6 +85,8 @@ gr.remove_cancel(emp_summary)
 
 report_wb = gr.load_template(weeks)
 report = report_wb['ITS_D']
+report_df = report_wb['DF']
+report_vep_c = report_wb['VEP-C']
 mth = dt.datetime.strftime(wk3_start, '%b').upper()
 gr.write_title_date(report, adjusted_first_day, globals()[f'wk{weeks}_end'], mth)
 # print(report['A1'].value)
