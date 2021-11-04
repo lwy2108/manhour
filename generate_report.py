@@ -156,7 +156,7 @@ def fill_holidays(sheet, holidays, row, weeks_dates):  # remove added?
                 print(row, sheet[f'F{row + week - 1}'].value)
 
 
-def report_add_entry(sheet, first_row, weeks_dates, dates, entry_type, duration):  # add not replace, remove successful
+def report_add_entry(sheet, first_row, weeks_dates, dates, entry_type, duration, rep_string):  # add not replace, remove successful
     if entry_type == 'HOSPITALISATION' or entry_type == 'SICK LEAVE':
         type_column = 'L'
     elif entry_type == 'BIRTHDAY LEAVE' or entry_type == 'BIRTHDAY' or entry_type == 'OFF IN LIEU':
@@ -165,6 +165,18 @@ def report_add_entry(sheet, first_row, weeks_dates, dates, entry_type, duration)
         type_column = 'J'
     else:
         type_column = 'K'
+
+    if rep_string == "other":
+        if entry_type == 'HOSPITALISATION' or entry_type == 'SICK LEAVE':
+            type_column = 'K'
+        elif entry_type == 'BIRTHDAY LEAVE' or entry_type == 'BIRTHDAY' or entry_type == 'OFF IN LIEU':
+            type_column = 'L'
+        elif entry_type == 'NATIONAL SERVICE LEAVE':
+            type_column = 'I'
+        else:
+            type_column = 'J'
+
+
     for date in dates:
         for week in weeks_dates:
             if date in weeks_dates[week]:
@@ -178,6 +190,45 @@ def report_add_entry(sheet, first_row, weeks_dates, dates, entry_type, duration)
                         sheet[f'{type_column}{first_row + week - 1}'].value += 4.15
                     except TypeError:
                         sheet[f'{type_column}{first_row + week - 1}'].value = 4.15
+
+
+def report_add_shift_entry(sheet, first_row, weeks_dates, dates, entry_type, duration, rep_string):  # add not replace, remove successful
+
+    if entry_type == 'HOSPITALISATION' or entry_type == 'SICK LEAVE':
+        type_column = 'L'
+    elif entry_type == 'BIRTHDAY LEAVE' or entry_type == 'BIRTHDAY' or entry_type == 'OFF IN LIEU':
+        type_column = 'M'
+    elif entry_type == 'NATIONAL SERVICE LEAVE':
+        type_column = 'J'
+    else:
+        type_column = 'K'
+
+    if rep_string == "other":
+        if entry_type == 'HOSPITALISATION' or entry_type == 'SICK LEAVE':
+            type_column = 'K'
+        elif entry_type == 'BIRTHDAY LEAVE' or entry_type == 'BIRTHDAY' or entry_type == 'OFF IN LIEU':
+            type_column = 'L'
+        elif entry_type == 'NATIONAL SERVICE LEAVE':
+            type_column = 'I'
+        else:
+            type_column = 'J'
+
+    for date in dates:
+        for week in weeks_dates:
+            if date in weeks_dates[week]:
+                if duration != 0.5:
+                    try:
+                        sheet[f'{type_column}{first_row + week - 1}'].value += 10.375
+                    except TypeError:
+                        sheet[f'{type_column}{first_row + week - 1}'].value = 10.375
+                else:
+                    try:
+                        sheet[f'{type_column}{first_row + week - 1}'].value += 5.1875
+                    except TypeError:
+                        sheet[f'{type_column}{first_row + week - 1}'].value = 5.1875
+
+                if sheet[f'{type_column}{first_row + week - 1}'].value > 41.5:
+                    sheet[f'{type_column}{first_row + week - 1}'].value = 41.5
 
 
 def entry_remove_successful():  # only if successful, based on type (Others: OIL, BIRTHDAY LEAVE;

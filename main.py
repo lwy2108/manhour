@@ -2,6 +2,8 @@ import weekly_dates as wd
 import leave_parser as lp
 import generate_report as gr
 import datetime as dt
+import additional
+import shift
 
 
 while True:
@@ -20,6 +22,7 @@ adjusted_first_day = wd.determine_adjusted_first_day(first_day)
 wk1_start, wk2_start, wk3_start, wk4_start, wk5_start = wd.determine_weekly_start_dates(adjusted_first_day, weeks)
 wk1_end, wk2_end, wk3_end, wk4_end, wk5_end = wd.determine_weekly_end_dates(wk1_start, wk2_start, wk3_start, wk4_start,
                                                                             wk5_start)
+
 # print(wk1_start, wk2_start, wk3_start, wk4_start, wk5_start)
 # print(wk1_end, wk2_end, wk3_end, wk4_end, wk5_end)
 # add loop for confirmation
@@ -89,6 +92,8 @@ report_df = report_wb['DF']
 report_vep_c = report_wb['VEP-C']
 mth = dt.datetime.strftime(wk3_start, '%b').upper()
 gr.write_title_date(report, adjusted_first_day, globals()[f'wk{weeks}_end'], mth)
+additional.title_df(first_day, report_df, adjusted_first_day, globals()[f'wk{weeks}_end'])
+additional.title_vep_c(first_day, report_vep_c, adjusted_first_day, globals()[f'wk{weeks}_end'])
 # print(report['A1'].value)
 emp_first_row = []
 max_row = report.max_row - 25
@@ -143,6 +148,12 @@ print(len(emp_first_row))
 
 print(matched_emp)
 
+# separate shift workers
+
+emp_summary, shift_workers, shift_matched = shift.separate_shift(emp_summary, matched_emp, report)
+
+shift_dates = shift.dates(adjusted_first_day, globals()[f'wk{weeks}_end'], weeks)
+
 for employee in emp_summary:
     try:
         first_row = matched_emp[employee]
@@ -159,7 +170,40 @@ for employee in emp_summary:
         entry_type = emp_summary[employee][entry][3]
         entry_duration = emp_summary[employee][entry][1]
         print(entry_type)
-        gr.report_add_entry(report, first_row, weeks_dates, entry_dates, entry_type, entry_duration)
+        gr.report_add_entry(report, first_row, weeks_dates, entry_dates, entry_type, entry_duration, "")
+
+for employee in shift_workers:
+
+    try:
+        first_row = shift_matched[employee]
+
+    except KeyError:
+        continue
+
+
+    for entry in shift_workers[employee]:
+        if shift_workers[employee][entry][1] > 1.0:
+            start_dt = dt.datetime.strptime(entry[0:10], '%d/%m/%Y')
+            end_dt = dt.datetime.strptime(shift_workers[employee][entry][0], '%d/%m/%Y')
+            entry_dates = gr.entry_dates(start_dt, end_dt)
+        else:
+            entry_dates = [dt.datetime.strptime(entry, '%d/%m/%Y')]
+        entry_type = shift_workers[employee][entry][3]
+        entry_duration = shift_workers[employee][entry][1]
+        print(entry_type)
+        gr.report_add_shift_entry(report, first_row, shift_dates, entry_dates, entry_type, entry_duration, "")
+
+df_first_row = additional.get_first_rows(report_df, "df", weeks)
+additional.fill_dates_holidays(df_first_row, report_df, holidays, weeks_dates, shift_dates, weeks)
+matched_emp = additional.match(emp_summary, df_first_row, report_df)
+emp_summary, regular_workers, regular_matched = additional.separate_regular(report_df, matched_emp, emp_summary)
+additional.fill_report(report_df, emp_summary, regular_workers, matched_emp, regular_matched, shift_dates, weeks_dates, "other")
+
+vep_c_first_row = additional.get_first_rows(report_vep_c, "vep-c", weeks)
+additional.fill_dates_holidays(vep_c_first_row, report_vep_c, holidays, weeks_dates, shift_dates, weeks)
+matched_emp = additional.match(emp_summary, vep_c_first_row, report_vep_c)
+emp_summary, regular_workers, regular_matched = additional.separate_regular(report_vep_c, matched_emp, emp_summary)
+additional.fill_report(report_vep_c, emp_summary, regular_workers, matched_emp, regular_matched, shift_dates, weeks_dates, "other")
 
 report_date = dt.datetime.strftime(wk3_start, '%m-%Y')
 report_wb.save(f'manhour_{report_date}.xlsx')
